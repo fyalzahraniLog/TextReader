@@ -1,5 +1,5 @@
 @echo off
-echo TextReader v0.0.5 - Dependency Installer
+echo TextReader v0.0.6 - Dependency Installer
 echo ---------------------------------------
 python -m pip install --upgrade pip
 pip install -r requirements.txt

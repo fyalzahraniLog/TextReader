@@ -1,15 +1,7 @@
-# TextReader v0.0.5 - Required Libraries
-# To install: Run 'pip install -r requirements.txt'
-
-
-# Core dependencies
-pillow==10.4.0            # Image processing
-pytesseract==0.3.10       # OCR engine wrapper
-gtts==2.5.1               # Google Text-to-Speech
-pygame==2.6.1             # Audio playback
-keyboard==0.13.5          # Hotkey detection
+pillow==10.4.0
+pytesseract==0.3.10
+pygame==2.6.1
+keyboard==0.13.5
 deep-translator==1.11.4
-python-dotenv==1.0.1
-
-# Tesseract OCR must be installed separately from:
-# https://github.com/UB-Mannheim/tesseract/wiki
+edge-tts==6.1.3
+ttkbootstrap==1.10.1
