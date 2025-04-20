@@ -27,9 +27,11 @@ class Settings:
         return self.config.get(section, key, fallback=fallback)
 
     def set(self, section, key, value):
+        if not self.config.has_section(section):
+            self.config.add_section(section)
         self.config.set(section, key, str(value))
         self.save()
-
+        
     def save(self):
         with open(SETTINGS_FILE, 'w') as f:
             self.config.write(f)

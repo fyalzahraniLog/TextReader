@@ -3,15 +3,17 @@ os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 import ttkbootstrap as ttk
-from gui import CaptureUI
-from ocr import extract_text
-from tts import tts
 import keyboard
 import threading
 import time
 import datetime
+from gui import CaptureUI
+from ocr import extract_text
+from tts import tts
 from deep_translator import GoogleTranslator
 from dashboard import Dashboard
+from settings import settings
+
 
 class TextReader:
     def __init__(self, root):
@@ -28,6 +30,21 @@ class TextReader:
         if not self.is_selecting and self.root.winfo_exists():
             self.is_selecting = True
             self.root.after(0, self.ui.show)
+
+    def register_hotkeys(self):
+            # Unregister all previous hotkeys
+            keyboard.unhook_all_hotkeys()
+            # Register new hotkeys from settings
+            hotkeys = {
+                'select_area': settings.get('Hotkeys', 'select_area', fallback='ctrl+shift+c'),
+                'read_text': settings.get('Hotkeys', 'read_text', fallback='ctrl+shift+v'),
+                'toggle_lang': settings.get('Hotkeys', 'toggle_lang', fallback='ctrl+shift+l'),
+                'show_dashboard': settings.get('Hotkeys', 'show_dashboard', fallback='ctrl+shift+d')
+            }
+            keyboard.add_hotkey(hotkeys['select_area'], lambda: self.root.after(0, self.show_selector))
+            keyboard.add_hotkey(hotkeys['read_text'], lambda: self.root.after(0, lambda: self.read_selection(force_reread=True)))
+            keyboard.add_hotkey(hotkeys['toggle_lang'], lambda: self.root.after(0, self.toggle_language))
+            keyboard.add_hotkey(hotkeys['show_dashboard'], lambda: self.root.after(0, self.show_dashboard))
 
     def read_selection(self, force_reread=False):
         if not force_reread and not self.is_selecting:
@@ -62,6 +79,14 @@ class TextReader:
             self.dashboard = Dashboard(dash_root, self)
         else:
             self.dashboard.master.lift()
+
+    def set_language(self, lang):
+        self.current_lang = lang
+        self.show_feedback(f"Language: {self.current_lang.upper()}")
+        # self.logger.info(f"Language set to {self.current_lang}")
+        if self.last_text:
+            self.read_selection(force_reread=True)
+
 
     def show_feedback(self, message):
         if self.root.winfo_exists():

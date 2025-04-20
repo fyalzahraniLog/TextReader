@@ -1,0 +1,28 @@
+1. Dashboard UI Modernization
+You redesigned the dashboard for a modern, dark look using ttkbootstrap.
+The layout was improved for 800x650 resolution, with better spacing, larger fonts, and clear sectioning.
+The "Save All" button was placed inside the Hotkey Configuration section, matching your design.
+
+2. Language Selection Bug Fix
+Fixed the bug where clicking the language radio button multiple times would toggle the language unexpectedly.
+Now, selecting a language sets it directly, only if it’s different from the current language.
+
+3. Hotkey Saving and Live Update
+Fixed the issue where changing hotkeys and clicking "Save All" did not update the actual hotkeys in the running app.
+Added a register_hotkeys method to the main app (TextReader) to unregister and re-register hotkeys from settings.
+Now, hotkey changes take effect immediately after saving.
+
+4. Settings Robustness
+Fixed a crash when saving the language setting if the [General] section was missing in settings.ini.
+Updated the settings.py to automatically add missing sections before saving.
+
+5. Error Handling and Logging
+Fixed an error where the app tried to use a non-existent logger attribute in TextReader.
+Provided options to either add a logger or remove the logging line for simplicity.
+
+6. User Feedback
+The dashboard now shows a confirmation message when settings are saved.
+
+7. General Code Quality
+Improved code structure and maintainability.
+Ensured all UI and hotkey changes are robust and user-friendly.

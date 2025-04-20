@@ -4,9 +4,9 @@ from tkinter import Canvas
 class CaptureUI:
     def __init__(
         self, root,
-        overlay_color="#888888",  # Gray overlay
+        overlay_color="#111111",  # Gray overlay
         overlay_alpha=0.2,       # Transparency
-        selection_outline="red", # Selection border color
+        selection_outline="white", # Selection border color
         selection_fill="white"   # Selection fill color
     ):
         self.root = root

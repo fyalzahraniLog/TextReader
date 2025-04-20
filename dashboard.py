@@ -1,6 +1,8 @@
 import tkinter as tk
+from tkinter import ttk
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
+from settings import settings
 
 class Dashboard:
     def __init__(self, master, app):
@@ -8,231 +10,273 @@ class Dashboard:
         self.app = app
         self.master.title("TextReader Dashboard")
         self.master.geometry("800x650")
-        self.master.minsize(800, 650)
-
-        # No need to set theme here; it's set in main.py
-
-        self.main_frame = ttk.Frame(master, padding="20")
-        self.main_frame.pack(fill=tk.BOTH, expand=True)
-        self.create_header()
-        self.content = ttk.Frame(self.main_frame)
-        self.content.pack(fill=tk.BOTH, expand=True, pady=(20, 0))
-        self.content.columnconfigure(0, weight=1)
-        self.content.columnconfigure(1, weight=1)
-        self.create_voice_settings_card()
-        self.create_language_card()
-        self.create_hotkeys_card()
-        self.create_about_card()
-
-    def create_header(self):
-        header_frame = ttk.Frame(self.main_frame)
-        header_frame.pack(fill="x", pady=(0, 20))
-        title = ttk.Label(
-            header_frame,
-            text="TextReader Dashboard",
-            font=("Helvetica", 24, "bold"),
-            bootstyle="inverse-primary"
-        )
-        title.pack(side="left")
-        version = ttk.Label(
-            header_frame,
-            text="v1.0.0",
-            font=("Helvetica", 12),
-            bootstyle="inverse-secondary"
-        )
-        version.pack(side="left", padx=(10, 0), pady=(8, 0))
-
-    def create_card(self, title, row, column):
-        card = ttk.LabelFrame(
-            self.content,
-            text=title,
-            padding=15,
-            bootstyle="primary"  # Only use "primary", not "inverse-primary"
-        )
-        card.grid(row=row, column=column, padx=10, pady=10, sticky="nsew")
-        return card
-
-    def create_voice_settings_card(self):
-        card = self.create_card("Voice Settings", 0, 0)
-        ttk.Label(
-            card,
-            text="Speech Rate:",
-            font=("Helvetica", 10, "bold"),
-            bootstyle="inverse"
-        ).pack(anchor="w", pady=(0, 5))
+        self.master.resizable(False, False)
         
-        speed_frame = ttk.Frame(card)
-        speed_frame.pack(fill="x", pady=(0, 15))
+        # Setup styles
+        self._setup_styles()
+        
+        # Header
+        self._create_header()
+        
+        # Main content
+        content_frame = ttk.Frame(self.master, style='Content.TFrame')
+        content_frame.pack(expand=True, fill='both', padx=20, pady=10)
+        
+        # Create two columns
+        left_frame = ttk.Frame(content_frame)
+        left_frame.pack(side='left', fill='both', expand=True, padx=10)
+        
+        right_frame = ttk.Frame(content_frame)
+        right_frame.pack(side='right', fill='both', expand=True, padx=10)
+        
+        # Voice Settings (Left Top)
+        voice_frame = ttk.LabelFrame(left_frame, text="Voice Settings", style='Section.TLabelframe')
+        voice_frame.pack(fill='x', pady=10)
+        
+        # Speech Rate
+        ttk.Label(voice_frame, text="Speech Rate:", style='Content.TLabel').pack(anchor='w', padx=15, pady=5)
+        self.speed_frame = ttk.Frame(voice_frame)
+        self.speed_frame.pack(fill='x', padx=15, pady=5)
+        
         self.speed_scale = ttk.Scale(
-            speed_frame,
-            from_=0.5,
-            to=2.0,
-            value=1.0,
-            command=self._update_speed,
-            bootstyle="primary"
+            self.speed_frame, 
+            from_=0.5, 
+            to=2.0, 
+            value=self.app.tts.speed,
+            command=self._update_speed
         )
-        self.speed_scale.pack(side="left", fill="x", expand=True)
-        self.speed_label = ttk.Label(
-            speed_frame,
-            text="1.00x (+0%)",
-            bootstyle="inverse"
-        )
-        self.speed_label.pack(side="left", padx=(10, 0))
-
-        ttk.Label(
-            card,
-            text="Volume:",
-            font=("Helvetica", 10, "bold"),
-            bootstyle="inverse"
-        ).pack(anchor="w", pady=(0, 5))
+        self.speed_scale.pack(side='left', fill='x', expand=True)
+        self.speed_label = ttk.Label(self.speed_frame, text=f"{self.app.tts.speed:.1f}x", style='Content.TLabel')
+        self.speed_label.pack(side='right', padx=5)
         
-        volume_frame = ttk.Frame(card)
-        volume_frame.pack(fill="x", pady=(0, 15))
-        self.volume_scale = ttk.Scale(
-            volume_frame,
+        # Volume
+        ttk.Label(voice_frame, text="Volume:", style='Content.TLabel').pack(anchor='w', padx=15, pady=5)
+        self.vol_frame = ttk.Frame(voice_frame)
+        self.vol_frame.pack(fill='x', padx=15, pady=5)
+        
+        self.vol_scale = ttk.Scale(
+            self.vol_frame,
             from_=0,
             to=100,
-            value=50,
-            command=self._update_volume,
-            bootstyle="primary"
+            value=self.app.tts.volume,
+            command=self._update_volume
         )
-        self.volume_scale.pack(side="left", fill="x", expand=True)
-        self.volume_label = ttk.Label(
-            volume_frame,
-            text="0%",
-            bootstyle="inverse"
-        )
-        self.volume_label.pack(side="left", padx=(10, 0))
-
+        self.vol_scale.pack(side='left', fill='x', expand=True)
+        self.vol_label = ttk.Label(self.vol_frame, text=f"{self.app.tts.volume}%", style='Content.TLabel')
+        self.vol_label.pack(side='right', padx=5)
+        
+        # Test Voice button
         ttk.Button(
-            card,
+            voice_frame,
             text="Test Voice",
             command=lambda: self.app.tts.convert("This is a test of the text to speech system"),
-            bootstyle="outline-primary"
-        ).pack(anchor="center", pady=(10, 0))
-
-    def create_language_card(self):
-        card = self.create_card("Language Settings", 0, 1)
-        ttk.Label(
-            card,
-            text="Select Language:",
-            font=("Helvetica", 10, "bold"),
-            bootstyle="inverse"
-        ).pack(anchor="w", pady=(0, 10))
+            style='Accent.TButton'
+        ).pack(pady=10)
+        
+        # Language Settings (Right Top)
+        lang_frame = ttk.LabelFrame(right_frame, text="Language Settings", style='Section.TLabelframe')
+        lang_frame.pack(fill='x', pady=10)
+        
+        ttk.Label(lang_frame, text="Select Language:", style='Content.TLabel').pack(anchor='w', padx=15, pady=5)
         
         self.lang_var = tk.StringVar(value=self.app.current_lang)
-        languages = [
-            ("English", "en"),
-            ("Arabic", "ar")
-        ]
+        ttk.Radiobutton(
+            lang_frame,
+            text="English",
+            variable=self.lang_var,
+            value="en",
+            command=self._set_language,
+            style='Language.TRadiobutton'
+        ).pack(fill='x', padx=15, pady=5)
         
-        for lang_name, lang_code in languages:
-            btn = ttk.Radiobutton(
-                card,
-                text=lang_name,
-                variable=self.lang_var,
-                value=lang_code,
-                command=self.app.toggle_language,
-                bootstyle="toolbutton"
-            )
-            btn.pack(fill="x", pady=5)
-
-    def create_hotkeys_card(self):
-        card = self.create_card("Hotkey Configuration", 1, 0)
-        ttk.Label(
-            card,
-            text="Configure Shortcuts:",
-            font=("Helvetica", 10, "bold"),
-            bootstyle="inverse"
-        ).pack(anchor="w", pady=(0, 10))
-
+        ttk.Radiobutton(
+            lang_frame,
+            text="Arabic",
+            variable=self.lang_var,
+            value="ar",
+            command=self._set_language,
+            style='Language.TRadiobutton'
+        ).pack(fill='x', padx=15, pady=5)
+        
+        # Hotkey Configuration (Left Bottom)
+        hotkey_frame = ttk.LabelFrame(left_frame, text="Hotkey Configuration", style='Section.TLabelframe')
+        hotkey_frame.pack(fill='both', expand=True, pady=10)
+        
         self.hotkey_entries = {}
-        self.hotkey_defs = [
-            ("Select Text Area", "ctrl+shift+c", "show_selector"),
-            ("Read Selected Text", "ctrl+shift+v", "read_selection"),
-            ("Toggle Language", "ctrl+shift+l", "toggle_language"),
-            ("Show Dashboard", "ctrl+shift+d", "show_dashboard")
+        hotkeys = [
+            ("Select Text Area", "select_area", "ctrl+shift+c"),
+            ("Read Selected Text", "read_text", "ctrl+shift+v"),
+            ("Toggle Language", "toggle_lang", "ctrl+shift+l"),
+            ("Show Dashboard", "show_dashboard", "ctrl+shift+d")
         ]
-
-        for label, default, method in self.hotkey_defs:
-            frame = ttk.Frame(card)
-            frame.pack(fill="x", pady=5)
-            ttk.Label(
-                frame,
-                text=label,
-                bootstyle="inverse"
-            ).pack(side="left")
-            entry = ttk.Entry(frame, width=15)
-            entry.insert(0, default)
-            entry.pack(side="left", padx=5)
-            self.hotkey_entries[method] = entry
-
-        save_all_btn = ttk.Button(
-            card,
+        
+        for i, (label, key, default) in enumerate(hotkeys):
+            ttk.Label(hotkey_frame, text=label + ":", style='Content.TLabel').pack(anchor='w', padx=15, pady=5)
+            entry = ttk.Entry(hotkey_frame, width=30)
+            entry.insert(0, settings.get('Hotkeys', key, fallback=default))
+            entry.pack(fill='x', padx=15, pady=5)
+            self.hotkey_entries[key] = entry
+        
+        # Save All button inside hotkey_frame
+        ttk.Button(
+            hotkey_frame,
             text="Save All",
-            bootstyle="outline-success",
-            command=self._save_all_hotkeys
-        )
-        save_all_btn.pack(pady=10)
-
-    def create_about_card(self):
-        card = self.create_card("About", 1, 1)
-        ttk.Label(
-            card,
-            text="TextReader",
-            font=("Helvetica", 14, "bold"),
-            bootstyle="inverse"
-        ).pack(pady=(0, 5))
+            command=self._save_all_settings,
+            style='Success.TButton'
+        ).pack(pady=10)
+        
+        # About Section (Right Bottom)
+        about_frame = ttk.LabelFrame(right_frame, text="About", style='Section.TLabelframe')
+        about_frame.pack(fill='both', expand=True, pady=10)
         
         ttk.Label(
-            card,
+            about_frame,
+            text="TextReader",
+            style='Title.TLabel'
+        ).pack(pady=10)
+        
+        ttk.Label(
+            about_frame,
             text="Screen Reader with OCR & TTS",
-            bootstyle="inverse-secondary"
+            style='Content.TLabel'
         ).pack()
         
-        ttk.Separator(card, bootstyle="primary").pack(fill="x", pady=10)
-        
-        info_text = """
-        Developed with Python using:
-        • Tesseract OCR for text recognition
-        • Edge TTS for speech synthesis
-        • Tkinter for the user interface
-        """
         ttk.Label(
-            card,
-            text=info_text.strip(),
-            bootstyle="inverse"
-        ).pack(pady=10)
+            about_frame,
+            text="\nDeveloped with Python using:",
+            style='Content.TLabel'
+        ).pack(pady=5)
+        
+        features = [
+            "• Tesseract OCR for text recognition",
+            "• Edge TTS for speech synthesis",
+            "• Tkinter for the user interface"
+        ]
+        
+        for feature in features:
+            ttk.Label(
+                about_frame,
+                text=feature,
+                style='Content.TLabel'
+            ).pack(pady=2)
 
-    def _update_speed(self, value):
-        value = float(value)
-        rate = self.app.tts._speed_to_rate(value)
-        self.speed_label.config(text=f"{value:.2f}x ({rate})")
-        self.app.tts.speed = value
+    def _setup_styles(self):
+        style = ttk.Style()
+        
+        # Define colors
+        bg_color = '#1e1e1e'
+        fg_color = '#ffffff'
+        
+        # Header styles
+        style.configure('Header.TFrame', background=bg_color)
+        style.configure('Header.TLabel',
+            background=bg_color,
+            foreground=fg_color,
+            font=('Arial', 20, 'bold')
+        )
+        
+        # Content styles
+        style.configure('Content.TFrame', background=bg_color)
+        style.configure('Content.TLabel',
+            background=bg_color,
+            foreground=fg_color
+        )
+        
+        # Section styles
+        style.configure('Section.TLabelframe',
+            background=bg_color,
+            foreground=fg_color
+        )
+        style.configure('Section.TLabelframe.Label',
+            background=bg_color,
+            foreground=fg_color,
+            font=('Arial', 10, 'bold')
+        )
+        
+        # Title style
+        style.configure('Title.TLabel',
+            background=bg_color,
+            foreground=fg_color,
+            font=('Arial', 16, 'bold')
+        )
+        
+        # Button styles
+        style.configure('Accent.TButton',
+            padding=5
+        )
+        
+        style.configure('Success.TButton',
+            padding=5
+        )
+        
+        # Radio button style
+        style.configure('Language.TRadiobutton',
+            background=bg_color,
+            foreground=fg_color
+        )
 
-    def _update_volume(self, value):
-        value = int(float(value))
-        edge_volume = int((value - 50) * 2)
-        edge_volume = max(-100, min(100, edge_volume))
-        self.volume_label.config(text=f"{edge_volume}%")
-        self.app.tts.volume = value
+    def _create_header(self):
+        header_frame = ttk.Frame(self.master, style='Header.TFrame')
+        header_frame.pack(fill='x', padx=20, pady=10)
+        
+        title_label = ttk.Label(
+            header_frame,
+            text="TextReader Dashboard",
+            style='Header.TLabel'
+        )
+        title_label.pack(side='left')
+        
+        version_label = ttk.Label(
+            header_frame,
+            text="v1.0.0",
+            style='Header.TLabel',
+            font=('Arial', 12)
+        )
+        version_label.pack(side='left', padx=10, pady=3)
 
-    def _save_all_hotkeys(self):
-        import keyboard
-        from tkinter import messagebox
-        errors = []
-        for label, _, method in self.hotkey_defs:
-            entry = self.hotkey_entries[method]
-            new_hotkey = entry.get().strip()
-            try:
-                func = getattr(self.app, method)
-                keyboard.add_hotkey(new_hotkey, func)
-            except Exception as e:
-                errors.append(f"{label}: {new_hotkey} ({e})")
-        if errors:
-            messagebox.showerror("Hotkey Error", "Some hotkeys could not be set:\n" + "\n".join(errors))
-        else:
-            messagebox.showinfo("Success", "All hotkeys saved successfully!")
+    def _update_speed(self, v):
+        speed = float(v)
+        self.speed_label.config(text=f"{speed:.1f}x")
+        self.app.tts.speed = speed
+        settings.set('TTS', 'speed', str(speed))
+
+    def _update_volume(self, v):
+        vol = int(float(v))
+        self.vol_label.config(text=f"{vol}%")
+        self.app.tts.volume = vol
+        settings.set('TTS', 'volume', str(vol))
+
+    def _set_language(self):
+        selected_lang = self.lang_var.get()
+        if self.app.current_lang != selected_lang:
+            self.app.set_language(selected_lang)
+
+    def _save_all_settings(self):
+        # Save hotkeys
+        for key, entry in self.hotkey_entries.items():
+            settings.set('Hotkeys', key, entry.get())
+        
+        # Save TTS settings
+        settings.set('TTS', 'speed', str(self.app.tts.speed))
+        settings.set('TTS', 'volume', str(self.app.tts.volume))
+        
+        # Save language setting
+        settings.set('General', 'language', self.lang_var.get())
+        
+        # Restart hotkeys
+        self.app.register_hotkeys()
+        
+        # Show confirmation
+        self._show_save_confirmation()
+
+    def _show_save_confirmation(self):
+        confirm_label = ttk.Label(
+            self.master,
+            text="Settings saved successfully!",
+            style='Success.TLabel'
+        )
+        confirm_label.pack(pady=5)
+        self.master.after(2000, confirm_label.destroy)
 
     def show(self):
         self.master.mainloop()
