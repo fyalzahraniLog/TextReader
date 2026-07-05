@@ -156,13 +156,18 @@ Arabic. Demo-scoped: minimum friction beats polish.
       frozen exe (with `TESSDATA_PREFIX` set to its tessdata) > PATH (Docker).
       Never a system install. Portable binaries are staged (not committed) in
       `third_party/tesseract/` — see its README for the one-time setup.
-- [ ] PyInstaller one-file build: `demo.spec` + `tools/build_demo.ps1`
-      written (bundles pipeline, glossary general + pathfinder-wotr,
-      Tesseract; console kept visible for the Arabic how-to). REMAINING:
-      stage portable Tesseract per `third_party/tesseract/README.md`, run
-      the build script on native Windows, and smoke-test the resulting
-      `dist/TextReaderDemo.exe` over a real game before zipping it with
-      `README.demo.ar.md`.
+- [x] PyInstaller one-file build: `demo.spec` + `tools/build_demo.ps1`
+      (bundles pipeline, glossary general + pathfinder-wotr, portable
+      Tesseract 5.4.0; console kept visible for the Arabic how-to). Built
+      and verified: `dist/TextReaderDemo.exe --selftest` passes end-to-end
+      (bundled OCR reads a rendered test line exactly, glossary terms
+      restored in the Arabic output, edge-tts returns audio). The exe
+      launches and holds the Tk mainloop. Still to do before shipping the
+      zip: a human pass over a real game (hotkey + region select + audio
+      on a physical desktop). NOTE for onefile builds: killing the exe from
+      scripts must kill the CHILD process too (the bootloader spawns one) —
+      a surviving child holds the single-instance mutex and the exe file
+      lock, making later rebuilds run stale code.
 - [x] First-run experience: fixed defaults (Arabic, Ctrl+Shift+C select,
       Ctrl+Shift+Q quit, game via `TEXTREADER_GAME`, default
       pathfinder-wotr), Arabic how-to printed on launch (stdout forced to
