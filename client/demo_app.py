@@ -175,14 +175,6 @@ def main():
         pass
 
     if "--selftest" in sys.argv:
-        if "--debug-stdio" in sys.argv:
-            with open(os.path.join(os.path.dirname(sys.executable), "stdio_debug.txt"), "w") as dbg:
-                dbg.write(f"stdout={sys.stdout!r}\n")
-                dbg.write(f"fileno={sys.stdout.fileno() if sys.stdout else 'None'}\n")
-                dbg.write(f"stderr={sys.stderr!r}\n")
-            print("CP-main reached", flush=True)
-            sys.stderr.write("CP-main via stderr\n")
-            sys.stderr.flush()
         sys.exit(selftest())
 
     mutex = acquire_single_instance_lock()
