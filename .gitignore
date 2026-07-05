@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# generated at runtime, machine-specific
+client/settings.ini
+
+# user-provided reference audio for XTTS-v2 (large binary, not for git)
+voice/*.wav
+voice/*.mp3
+!voice/README.md
+
+# demo build (plan.md Phase 5): staged portable Tesseract + PyInstaller output
+third_party/tesseract/*
+!third_party/tesseract/README.md
+build/
+dist/
+
+# offline extractor output awaiting curation, not glossary source of truth
+glossary/games/*/candidates.csv

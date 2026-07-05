@@ -1,0 +1,30 @@
+services:
+  backend:
+    build:
+      # Repo root as context so the image gets both server/ and the shared
+      # pipeline/ package (see server/Dockerfile).
+      context: .
+      dockerfile: server/Dockerfile
+      args:
+        # Set INSTALL_XTTS=true (env var or --build-arg) to pull in the
+        # cloned-voice engine; off by default since it's a multi-GB dependency.
+        INSTALL_XTTS: "${INSTALL_XTTS:-false}"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./glossary:/app/glossary:ro
+      - ./voice:/app/voice:ro
+      - xtts_model_cache:/root/.local/share/tts
+    # Env vars (uncomment `environment:` and add what you need):
+    #   OCR_PSM: "6"                     — Tesseract page segmentation mode
+    #   OCR_PREPROCESS: "true"           — grayscale + 2x upscale before OCR;
+    #                                       neither validated against real
+    #                                       game screenshots yet
+    #   TTS_ENGINE: "xtts"               — use the cloned voice instead of
+    #                                       edge-tts (needs INSTALL_XTTS=true
+    #                                       at build time and a reference
+    #                                       clip at ./voice/reference.wav)
+    #   XTTS_DEVICE: "cuda"              — run XTTS-v2 on GPU instead of CPU
+
+volumes:
+  xtts_model_cache:
